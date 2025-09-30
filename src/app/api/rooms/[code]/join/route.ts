@@ -10,9 +10,10 @@ async function hashPin(pin: string) {
 
 export async function POST(
   req: Request,
-  { params }: { params: { code: string } }
+  { params }: { params: Promise<{ code: string }> }
 ) {
-  const code = params.code.toUpperCase();
+  const { code: rawCode } = await params;
+  const code = rawCode.toUpperCase();
   const kv = getKV();
   const meta = await kv.json.get(`room:${code}:meta`);
   if (!meta)

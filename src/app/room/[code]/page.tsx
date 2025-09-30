@@ -39,9 +39,10 @@ async function getRoom(code: string) {
 export default async function RoomPage({
   params,
 }: Readonly<{
-  params: { code: string };
+  params: Promise<{ code: string }>;
 }>) {
-  const code = params.code.toUpperCase();
+  const { code: rawCode } = await params;
+  const code = rawCode.toUpperCase();
   const data = await getRoom(code);
 
   // Get current user's cookie for ownership comparison
