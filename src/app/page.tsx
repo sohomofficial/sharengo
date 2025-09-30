@@ -1,103 +1,132 @@
-import Image from "next/image";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { CreateRoomForm } from "@/components/create-room-form";
+import { JoinRoomForm } from "@/components/join-room-form";
+import { Share2Icon } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { RecentRooms } from "@/components/recent-rooms";
+import Footer from "@/components/footer";
 
-export default function Home() {
+const faqs = [
+  {
+    question: "How does this app work?",
+    answer:
+      "Create a media room with an event name, set your desired expiry time in minutes, and share the room link with participants. Everyone can upload, view, and download photos until the room expires.",
+  },
+  {
+    question: "Can I set any expiry time for my room?",
+    answer:
+      "Yes, you can choose how many minutes the room should stay active. After the expiry, all media and the room are automatically and permanently deleted.",
+  },
+  {
+    question: "Do I need to create another WhatsApp group for each event?",
+    answer:
+      "No! This app replaces the hassle of event groups—just create a media room and share its link.",
+  },
+  {
+    question: "Who can delete media in a room?",
+    answer:
+      "The person who uploads a media file can delete it anytime while the room is active. Other users can view and download but cannot delete media uploaded by others.",
+  },
+  {
+    question: "What types of files can be uploaded?",
+    answer:
+      "For now, only images are supported for fast, event-focused sharing.",
+  },
+  {
+    question: "Is the data really deleted after expiry?",
+    answer:
+      "Yes, media and room details are permanently removed after expiration, with no backups.",
+  },
+  {
+    question: "Is there a limit to how many files I can upload?",
+    answer:
+      "You can upload multiple files at once, but there may be a maximum size or count based on server capacity.",
+  },
+  {
+    question: "How secure is my event room?",
+    answer:
+      "Rooms are protected by a unique ID and optional password. Only invited users with the link and password can access and contribute to a room.",
+  },
+];
+
+export default function HomePage() {
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <section className="py-24 sm:py-32">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="z-10 mx-auto flex max-w-4xl flex-col items-center gap-14 text-center mb-20">
+          <Share2Icon />
+          <div>
+            <h1 className="mb-4 text-3xl font-medium text-pretty lg:text-6xl">
+              Share Event Memories Without the WhatsApp Chaos
+            </h1>
+            <p className="mx-auto max-w-xl text-muted-foreground">
+              Create temporary rooms to share and collect photos from events,
+              meetings, or gatherings with friends and colleagues.
+            </p>
+          </div>
+          <div className="flex w-full flex-col items-start justify-center gap-6 lg:flex-row">
+            <Tabs defaultValue="create" className="max-w-xl w-full">
+              <TabsList className="mb-2 grid w-full grid-cols-2">
+                <TabsTrigger value="create">Create</TabsTrigger>
+                <TabsTrigger value="join">Join</TabsTrigger>
+              </TabsList>
+              <TabsContent value="create">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Create a Room</CardTitle>
+                    <CardDescription>
+                      Create a new room for collaboration
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <CreateRoomForm />
+                  </CardContent>
+                </Card>
+              </TabsContent>
+              <TabsContent value="join">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Join a Room</CardTitle>
+                    <CardDescription>
+                      Join an existing room for collaboration
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <JoinRoomForm />
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
+            <RecentRooms />
+          </div>
+          <p className="mt-6 font-medium text-muted-foreground">
+            Find out all the essential details about our platform and how it can
+            serve your needs.
+          </p>
+          <div className="mx-auto mt-6 max-w-xl">
+            {faqs.map((faq, index) => (
+              <div key={faq.question} className="mb-8 flex gap-4 text-left">
+                <span className="flex size-6 shrink-0 items-center justify-center rounded-sm bg-secondary font-mono text-xs text-primary">
+                  {index + 1}
+                </span>
+                <div>
+                  <div className="mb-2 flex items-center justify-between">
+                    <h3 className="font-medium">{faq.question}</h3>
+                  </div>
+                  <p className="text-sm text-muted-foreground">{faq.answer}</p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+        <Footer />
+      </div>
+    </section>
   );
 }
