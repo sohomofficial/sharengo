@@ -5,6 +5,7 @@ import { PhotoCard } from "@/components/photo-card";
 import { RoomVisitTracker } from "@/components/room-visit-tracker";
 import { CountdownTimer } from "@/components/clock-timer";
 import { RoomPasswordProtection } from "@/components/room-password-protection";
+import { RoomShare } from "@/components/room-share";
 import { cookies } from "next/headers";
 import Footer from "@/components/footer";
 
@@ -32,8 +33,22 @@ async function getRoom(code: string) {
     })
   );
 
+  // Get original PIN for authenticated users
+  let originalPin: string | null = null;
+  if (meta.hasPin) {
+    try {
+      const cookieStore = await cookies();
+      const accessCookie = cookieStore.get(`room_${code}`);
+      if (accessCookie) {
+        originalPin = await kv.get<string>(`room:${code}:pin:original`);
+      }
+    } catch {
+      // Ignore errors - PIN will remain null
+    }
+  }
+
   const ttl = await kv.ttl(`room:${code}:meta`);
-  return { meta, photos, ttl };
+  return { meta, photos, ttl, pin: originalPin };
 }
 
 export default async function RoomPage({
@@ -56,7 +71,7 @@ export default async function RoomPage({
     );
   }
 
-  const { meta, photos, ttl } = data;
+  const { meta, photos, ttl, pin } = data;
   const expirationTime = Date.now() + ttl * 1000; // Convert TTL seconds to future timestamp
 
   return (
@@ -71,12 +86,27 @@ export default async function RoomPage({
           <h1 className="text-2xl font-semibold text-balance text-center break-all">
             {meta.name}
           </h1>
-          <p className="text-muted-foreground text-center mt-4">
-            Room code: <b>{meta.code}</b>
-          </p>
+          <div className="flex flex-col items-center gap-4 mt-4">
+            <div className="text-muted-foreground text-center space-y-1">
+              <p>
+                Room code: <b>{meta.code}</b>
+              </p>
+              {pin && (
+                <p>
+                  PIN: <b>{pin}</b>
+                </p>
+              )}
+            </div>
+            <RoomShare
+              roomCode={meta.code}
+              roomName={meta.name}
+              hasPin={meta.hasPin}
+              pin={pin}
+            />
+          </div>
           <div
             aria-live="polite"
-            className="flex justify-center text-sm text-muted-foreground"
+            className="flex justify-center text-sm text-muted-foreground mt-4"
           >
             <div className="flex items-center gap-2">
               <span>Expires in:</span>

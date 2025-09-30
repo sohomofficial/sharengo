@@ -65,6 +65,8 @@ export async function POST(req: Request) {
     if (pin) {
       const h = await hashPin(pin);
       pipeline.set(`room:${code}:pin`, h, { ex: ttlSeconds });
+      // Store original PIN for authenticated users to share
+      pipeline.set(`room:${code}:pin:original`, pin, { ex: ttlSeconds });
     }
     await pipeline.exec();
 
