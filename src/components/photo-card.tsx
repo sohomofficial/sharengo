@@ -1,9 +1,11 @@
 "use client";
 
 import Image from "next/image";
+import { useState } from "react";
 import { ImageZoom } from "@/components/ui/shadcn-io/image-zoom";
 import { PhotoDownloadButton } from "@/components/photo-download-button";
 import { PhotoDeleteButton } from "./photo-delete-button";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface PhotoCardProps {
   src: string;
@@ -27,18 +29,25 @@ export function PhotoCard({
   roomCode,
   userCookie,
 }: Readonly<PhotoCardProps>) {
+  const [isLoading, setIsLoading] = useState(true);
   const canDelete =
     photo.uploadedBy && userCookie && photo.uploadedBy === userCookie;
+
   return (
     <div className="group relative overflow-hidden rounded-md border">
+      {isLoading && <Skeleton className="w-full aspect-square" />}
       <ImageZoom>
         <Image
           src={src}
           alt={alt}
-          className="w-full aspect-square object-cover"
+          className={`w-full aspect-square object-cover transition-opacity duration-300 ${
+            isLoading ? "opacity-0" : "opacity-100"
+          }`}
           width={400}
           height={300}
           loading="lazy"
+          onLoad={() => setIsLoading(false)}
+          onError={() => setIsLoading(false)}
         />
       </ImageZoom>
 

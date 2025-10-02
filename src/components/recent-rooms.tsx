@@ -3,8 +3,10 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Clock, Users, ExternalLink } from "lucide-react";
+import { Clock, ExternalLink, RefreshCw, Telescope } from "lucide-react";
 import Link from "next/link";
+import { filterActiveRooms } from "@/lib/recent-rooms";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface RecentRoom {
   code: string;
@@ -17,27 +19,32 @@ export function RecentRooms() {
   const [recentRooms, setRecentRooms] = useState<RecentRoom[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  const refreshRooms = async () => {
+    setIsLoading(true);
+    try {
+      const activeRooms = await filterActiveRooms();
+      setRecentRooms(activeRooms);
+    } catch (error) {
+      console.error("Failed to refresh rooms:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    // Get recent rooms from localStorage
-    const loadRecentRooms = () => {
+    // Get active recent rooms and filter out expired ones
+    const loadActiveRecentRooms = async () => {
       try {
-        const stored = localStorage.getItem("sharengo_recent_rooms");
-        if (stored) {
-          const rooms: RecentRoom[] = JSON.parse(stored);
-          // Sort by lastVisited (most recent first) and take only 5
-          const sortedRooms = rooms
-            .toSorted((a, b) => b.lastVisited - a.lastVisited)
-            .slice(0, 5);
-          setRecentRooms(sortedRooms);
-        }
+        const activeRooms = await filterActiveRooms();
+        setRecentRooms(activeRooms);
       } catch (error) {
-        console.error("Failed to load recent rooms:", error);
+        console.error("Failed to load active recent rooms:", error);
       } finally {
         setIsLoading(false);
       }
     };
 
-    loadRecentRooms();
+    loadActiveRecentRooms();
   }, []);
 
   const formatTimeAgo = (timestamp: number) => {
@@ -62,12 +69,30 @@ export function RecentRooms() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Clock className="size-4" />
-            Recent Rooms
+            Recent Active Rooms
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-center py-8">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-foreground"></div>
+          <div className="space-y-3">
+            {Array.from({ length: 3 }, (_, i) => `loading-${i}`).map((id) => (
+              <div
+                key={id}
+                className="flex items-center justify-between p-3 rounded-lg border"
+              >
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-5 w-16 rounded-full" />
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Skeleton className="h-3 w-16" />
+                    <span className="text-muted-foreground">•</span>
+                    <Skeleton className="h-3 w-12" />
+                  </div>
+                </div>
+                <Skeleton className="h-8 w-8 rounded" />
+              </div>
+            ))}
           </div>
         </CardContent>
       </Card>
@@ -80,13 +105,13 @@ export function RecentRooms() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Clock className="size-4" />
-            Recent Rooms
+            Recent Active Rooms
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-center py-8 text-muted-foreground">
-            <Users className="h-12 w-12 mx-auto mb-3 opacity-50" />
-            <p>No recent rooms yet</p>
+            <Telescope className="h-12 w-12 mx-auto mb-3 opacity-50" />
+            <p>No active rooms found</p>
             <p className="text-sm">Create or join a room to see your history</p>
           </div>
         </CardContent>
@@ -97,9 +122,23 @@ export function RecentRooms() {
   return (
     <Card className="w-full max-w-xl">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Clock className="size-4" />
-          Recent Rooms
+        <CardTitle className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Clock className="size-4" />
+            Recent Active Rooms
+          </div>
+          <Button
+            onClick={refreshRooms}
+            size="sm"
+            variant="ghost"
+            className="h-8 w-8 p-0"
+            disabled={isLoading}
+          >
+            <RefreshCw
+              className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
+            />
+            <span className="sr-only">Refresh rooms</span>
+          </Button>
         </CardTitle>
       </CardHeader>
       <CardContent>

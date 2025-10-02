@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import { optionalPinSchema } from "@/lib/pin-validation";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -17,13 +18,15 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { PinInputWithStrength } from "@/components/ui/pin-input-with-strength";
 import { addRecentRoom } from "@/lib/recent-rooms";
+import { Loader2 } from "lucide-react";
 
 const createRoomSchema = z.object({
   name: z.string().min(1, {
     message: "Room name is required.",
   }),
-  pin: z.string().optional(),
+  pin: optionalPinSchema,
   expiresInMinutes: z.number().min(1).max(1440),
 });
 
@@ -71,7 +74,10 @@ export function CreateRoomForm() {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="space-y-4 text-left"
+      >
         <FormField
           control={form.control}
           name="name"
@@ -93,10 +99,11 @@ export function CreateRoomForm() {
             <FormItem>
               <FormLabel>Room PIN (Optional)</FormLabel>
               <FormControl>
-                <Input
+                <PinInputWithStrength
+                  value={field.value || ""}
+                  onChange={field.onChange}
                   placeholder="Set a PIN for additional security"
-                  type="password"
-                  {...field}
+                  disabled={loading}
                 />
               </FormControl>
               <FormMessage />
@@ -124,7 +131,14 @@ export function CreateRoomForm() {
         />
 
         <Button type="submit" className="w-full" disabled={loading}>
-          {loading ? "Creating..." : "Create Room"}
+          {loading ? (
+            <span>
+              Creating
+              <Loader2 className="inline animate-spin size-4 ml-2" />
+            </span>
+          ) : (
+            "Create Room"
+          )}
         </Button>
       </form>
     </Form>

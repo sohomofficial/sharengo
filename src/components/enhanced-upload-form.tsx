@@ -28,6 +28,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { toast } from "sonner";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Progress } from "@/components/ui/progress";
 
 const getFileIcon = (file: FileWithPreview) => {
   const fileType = file.file.type;
@@ -41,6 +43,7 @@ const getFileIcon = (file: FileWithPreview) => {
 
 export function EnhancedUploadForm({ code }: Readonly<{ code: string }>) {
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const router = useRouter();
   const maxSize = 10 * 1024 * 1024; // 10MB
   const maxFiles = 20;
@@ -89,17 +92,23 @@ export function EnhancedUploadForm({ code }: Readonly<{ code: string }>) {
     if (files.length === 0) return;
 
     setUploading(true);
+    setUploadProgress(0);
     try {
       let successCount = 0;
       let failCount = 0;
 
-      for (const file of files) {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
         try {
           const success = await uploadSingleFile(file);
           if (success) successCount++;
+          
+          // Update progress
+          setUploadProgress(((i + 1) / files.length) * 100);
         } catch (err) {
           console.error(`Failed to upload ${file.file.name}:`, err);
           failCount++;
+          setUploadProgress(((i + 1) / files.length) * 100);
         }
       }
 
@@ -209,13 +218,23 @@ export function EnhancedUploadForm({ code }: Readonly<{ code: string }>) {
                 disabled={uploading || files.length === 0}
               >
                 {(() => {
-                  if (uploading) return "Uploading...";
+                  if (uploading) return `Uploading... ${Math.round(uploadProgress)}%`;
                   const photoText = files.length === 1 ? "photo" : "photos";
                   return `Upload ${files.length} ${photoText}`;
                 })()}
               </Button>
             </div>
           </div>
+
+          {/* Upload progress */}
+          {uploading && (
+            <div className="space-y-2">
+              <Progress value={uploadProgress} className="w-full" />
+              <p className="text-sm text-muted-foreground text-center">
+                Uploading {Math.round(uploadProgress)}% complete...
+              </p>
+            </div>
+          )}
 
           {/* Files table */}
           <div className="bg-background overflow-hidden rounded-md border">
@@ -231,7 +250,32 @@ export function EnhancedUploadForm({ code }: Readonly<{ code: string }>) {
                 </TableRow>
               </TableHeader>
               <TableBody className="text-[13px]">
-                {files.map((file) => (
+                {uploading ? (
+                  // Show skeleton rows during upload
+                  Array.from({ length: Math.min(files.length, 3) }, (_, i) => `upload-skeleton-${i}`).map((id) => (
+                    <TableRow key={id}>
+                      <TableCell className="py-2">
+                        <div className="flex items-center gap-2">
+                          <Skeleton className="size-4" />
+                          <Skeleton className="h-4 w-32" />
+                        </div>
+                      </TableCell>
+                      <TableCell className="py-2">
+                        <Skeleton className="h-4 w-12" />
+                      </TableCell>
+                      <TableCell className="py-2">
+                        <Skeleton className="h-4 w-16" />
+                      </TableCell>
+                      <TableCell className="py-2 text-right">
+                        <div className="flex gap-1 justify-end">
+                          <Skeleton className="size-8" />
+                          <Skeleton className="size-8" />
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  files.map((file) => (
                   <TableRow key={file.id}>
                     <TableCell className="max-w-48 py-2 font-medium">
                       <span className="flex items-center gap-2">
@@ -266,7 +310,8 @@ export function EnhancedUploadForm({ code }: Readonly<{ code: string }>) {
                       </Button>
                     </TableCell>
                   </TableRow>
-                ))}
+                  ))
+                )}
               </TableBody>
             </Table>
           </div>

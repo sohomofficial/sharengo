@@ -8,6 +8,7 @@ import { RoomPasswordProtection } from "@/components/room-password-protection";
 import { RoomShare } from "@/components/room-share";
 import { cookies } from "next/headers";
 import Footer from "@/components/footer";
+import ErrorPage from "@/components/error-page";
 
 async function getRoom(code: string) {
   const kv = getKV();
@@ -64,11 +65,7 @@ export default async function RoomPage({
   const cookieStore = await cookies();
   const userCookie = cookieStore.get(`room_${code}`)?.value || null;
   if (!data) {
-    return (
-      <main className="container mx-auto max-w-5xl p-6">
-        <h1 className="text-2xl font-semibold">Room not found or expired</h1>
-      </main>
-    );
+    return <ErrorPage />; // Room not found or expired
   }
 
   const { meta, photos, ttl, pin } = data;

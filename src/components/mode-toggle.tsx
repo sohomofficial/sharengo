@@ -9,8 +9,7 @@ export function ModeToggle() {
   const { setTheme } = useTheme();
 
   return (
-    <ToggleGroup defaultValue="system" type="single">
-      <span className="sr-only">Toggle theme</span>
+    <ToggleGroup variant="outline" defaultValue="system" type="single">
       <ToggleGroupItem
         value="light"
         onClick={() => setTheme("light")}

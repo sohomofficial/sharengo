@@ -15,7 +15,7 @@ export function PhotoDownloadButton({
   src,
   fileName,
   className = "",
-}: PhotoDownloadButtonProps) {
+}: Readonly<PhotoDownloadButtonProps>) {
   const [isDownloading, setIsDownloading] = useState(false);
 
   const downloadImage = async () => {
